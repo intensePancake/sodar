@@ -1,10 +1,18 @@
 import processing.serial.*;
 
 Serial arduino;
+
 float rotSpeed; //rotations per minute
+
 float curAng; //current angle
-float lastMillis;
+float inputAng;
 float lastAng;
+
+float lastMillis;
+float curMillis;
+
+float cmDist;
+
 float radius;
 String curString = "";
 int text_size = 14;
@@ -96,18 +104,18 @@ void console(){
 }
 
 void changeSpeed(){
-  //autoGenerate randomly without a serial input
-  float tempMil = millis();
-  if(tempMil-lastMillis>17.5){
+  if(curMillis != lastMillis){
+    /*
     //max difference between correct and real is half degree increment of 1.8deg
     float fluctuation = randomGaussian()*0.9/12000;
-    float inputAngle = (rotSpeed /*+fluctuation*/ )*360/60000*(millis()-lastMillis);
-    float difAng = inputAngle - lastAng;
-    if(abs(inputAngle+360-lastAng)<abs(inputAngle-lastAng))difAng = inputAngle-lastAng + 360;
-    if(abs(inputAngle-360-lastAng)<abs(inputAngle-lastAng))difAng = inputAngle-lastAng - 360;
-    float newSpeed = difAng/(tempMil-lastMillis)*60000/360;
-    //rotSpeed = (rotSpeed * 4 + newSpeed)/5;
-    lastMillis = tempMil;
+    inputAng = (rotSpeed +fluctuation )*360/60000*(curMillis-lastMillis);
+    */
+    float difAng = inputAng - lastAng;
+    if(abs(inputAng+360-lastAng)<abs(inputAng-lastAng))difAng = inputAng-lastAng + 360;
+    if(abs(inputAng-360-lastAng)<abs(inputAng-lastAng))difAng = inputAng-lastAng - 360;
+    float newSpeed = difAng/(curMillis-lastMillis)*60000/360;
+    rotSpeed = (rotSpeed * 4 + newSpeed)/5; //increment the speed to new speed
+    lastMillis = curMillis;
   }
 }
 
@@ -127,6 +135,7 @@ void printAng(){
 
 void serialEvent(Serial port)
 {
+  curMillis = millis();
   int cm;
   float cm_float;
   int angle;
@@ -136,10 +145,10 @@ void serialEvent(Serial port)
     int read = port.readBytes(buffer);
     if(buffer != null) {
       cm = (int(buffer[3]) << 24) | (int(buffer[2]) << 16) | (int(buffer[1]) << 8) | int(buffer[0]);
-      cm_float = Float.intBitsToFloat(cm); // distance reading from arduino in centimeters
+      cmDist = Float.intBitsToFloat(cm); // distance reading from arduino in centimeters
       angle = (int(buffer[7]) << 24) | (int(buffer[6]) << 16) | (int(buffer[5]) << 8) | int(buffer[4]);
-      angle_float = Float.intBitsToFloat(angle); // motor angle reading from arduino in degrees
-      displayReading(cm_float, angle_float);
+      inputAng = Float.intBitsToFloat(angle); // motor angle reading from arduino in degrees
+      displayReading(cmDist, inputAng);
     }
   }
 }
