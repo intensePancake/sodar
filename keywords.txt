@@ -1,0 +1,32 @@
+#######################################
+# Syntax Coloring Map For Test
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Stepper	    KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+step	    KEYWORD2
+setSpeed	KEYWORD2
+version	    KEYWORD2
+setOrigin	KEYWORD2
+getAngle	KEYWORD2
+setAngle	KEYWORD2
+rotate	    KEYWORD2
+
+######################################
+# Instances (KEYWORD2)
+#######################################
+direction	KEYWORD2
+speed	    KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
