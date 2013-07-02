@@ -3,6 +3,7 @@ import processing.serial.*;
 Serial arduino;
 
 float rotSpeed; //rotations per minute
+float outerLimit;
 
 float curAng; //current angle
 float inputAng;
@@ -13,7 +14,11 @@ float curMillis;
 
 float cmDist;
 
+float diameter;
 float radius;
+
+ArrayList<Dot> dots;
+
 String curString = "";
 int text_size = 14;
 
@@ -26,9 +31,15 @@ void setup(){
   size(720,480);
   background(150);
   rotSpeed = 5;
+  outerLimit = 300;
   curAng = 0;
   lastMillis = millis();
-  radius = (width/2-width/32);
+  diameter = (width/2-width/32);
+  radius = diameter / 2;
+  dots = new ArrayList<Dot>();
+  dots.add(new Dot(100, 90));
+  time1=millis();
+  
   line(width / 2, 0, width / 2, height);
   
   // set up console
@@ -52,7 +63,7 @@ void draw(){
   strokeWeight(2);
   strokeCap(SQUARE);
   smooth();
-  ellipse(width / 4, height / 2, radius, radius);
+  ellipse(width / 4, height / 2, diameter, diameter);
   noStroke();
   fill(255);
   rect(width / 2, 0, width / 2, height / 2);
@@ -61,6 +72,8 @@ void draw(){
   fill(0);
   rect(width / 2, height / 2, width / 2, height / 2);
   console();
+  
+  drawDots(100, 90);
   /*
   String fps = "fps: " + int(frameRate);
   text(fps, width/2 + 10, 10);
@@ -130,16 +143,14 @@ void printAng(){
     */
     strokeWeight(5);
     stroke(36,221,0);
-    line(width/4,height/2, width/4+cos(radians(curAng))*radius/2,height/2+sin(radians(curAng))*radius/2);
+    line(width/4,height/2, width/4+cos(radians(curAng))*radius,height/2+sin(radians(curAng))*radius);
 }
 
 void serialEvent(Serial port)
 {
   curMillis = millis();
   int cm;
-  float cm_float;
   int angle;
-  float angle_float;
   byte[] buffer = new byte[bufSize];
   while(port.available() > 0) {
     int read = port.readBytes(buffer);
@@ -148,11 +159,54 @@ void serialEvent(Serial port)
       cmDist = Float.intBitsToFloat(cm); // distance reading from arduino in centimeters
       angle = (int(buffer[7]) << 24) | (int(buffer[6]) << 16) | (int(buffer[5]) << 8) | int(buffer[4]);
       inputAng = Float.intBitsToFloat(angle); // motor angle reading from arduino in degrees
-      displayReading(cmDist, inputAng);
+      if(cmDist > outerLimit) {
+        dots.add(new Dot(cmDist, inputAng));
+      }
     }
   }
 }
 
-void displayReading(float cm, float angle)
+void drawDots(float cm, float angle)
 {
+  for(int i = 0; i < dots.size(); i++) {
+    Dot dot = dots.get(i);
+    if(dot.alpha < 1) {
+      dots.remove(i);
+    } else {
+      dot.drawSelf();
+      if(millis() - dot.last_fade > 100) {
+        // 10 fades per second
+        dot.fade();
+      }
+    }
+  }
 }
+
+class Dot {
+  float cm;
+  float angle;
+  float alpha;
+  float dotRadius;
+  long last_fade;
+  
+  Dot(float dist, float ang) {
+    cm = dist;
+    angle = ang;
+    alpha = 255;
+    dotRadius = width / 64;
+    last_fade = 0;
+  }
+  
+  void drawSelf() {
+    noStroke();
+    fill(36, 221, 0, alpha);
+    float px = (cm / outerLimit) * radius; // number of pixels from the center of the circle
+    ellipse(width / 4 + px * cos(radians(angle)), height / 2 + px * sin(radians(angle)), dotRadius, dotRadius);
+  }
+  
+  void fade() {
+    alpha *= 9.0/10.0;
+    last_fade = millis();
+  }
+}
+    
