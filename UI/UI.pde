@@ -1,7 +1,3 @@
-import processing.serial.*;
-
-Serial arduino;
-
 float rotSpeed; //rotations per minute
 float outerLimit;
 
@@ -17,19 +13,24 @@ float cmDist;
 float diameter;
 float radius;
 
-ArrayList<Dot> dots;
-
-String curString = "";
+String curString = new String();
 int text_size = 14;
 
 StringList pastStrings;
 int historySize;
 int bufSize = 8;
 
+String[] listFuncs = {"speed(","rpm(","history(","pps(","move(","clear","speed","rpm","history","pps"};
+
+//make header null node
+GenericTreeNode procs = new GenericTreeNode();
+
+
 void setup(){
   frameRate(100);
   size(720,480);
   background(150);
+  curString = "";
   rotSpeed = 5;
   outerLimit = 300;
   curAng = 0;
@@ -38,11 +39,12 @@ void setup(){
   radius = diameter / 2;
   dots = new ArrayList<Dot>();
   dots.add(new Dot(100, 90));
-  time1=millis();
   
   line(width / 2, 0, width / 2, height);
   
   // set up console
+  buildTree();
+  checkTree();
   fill(0);
   rect(width / 2, height / 2, width / 2, height / 2);
   historySize = (height / 2 - 6) / (text_size + 6);
@@ -80,27 +82,149 @@ void draw(){
   */
 }
 
+//build a tree structure of all functions
+void buildTree(){
+  for(int i = 0; i<listFuncs.length; i++){
+    recursiveBuildTree(procs, listFuncs[i]);
+  }
+}
+
+void recursiveBuildTree(GenericTreeNode procs, String aFunc){
+  if(aFunc.length()==1){
+    //if last letter of string, make isEnding true
+    GenericTreeNode temp = procs.incrChild(aFunc.charAt(0));
+    temp.isEnding = true;
+  }else{
+    recursiveBuildTree(procs.incrChild(aFunc.charAt(0)),aFunc.substring(1));
+  }
+}
+
+void checkTree(){
+  for(int i = 0; i<procs.children.size(); i++){
+    rCheck((GenericTreeNode)procs.children.get(i),"");
+  }
+}
+
+GenericTreeNode rCheck(GenericTreeNode n,String s){
+  if(n.isEnding)println(s+n.data);
+  if(n.hasChildren()){
+   for(int i = 0; i<n.children.size(); i++){
+     rCheck((GenericTreeNode)n.children.get(i),s+n.data);
+   } 
+  }
+  return n;
+}
+
+
+ArrayList<String> funcFound(GenericTreeNode n){
+  ArrayList<String> output = new ArrayList<String>();
+  rFuncFound(n,"",curString,output);
+  //I can't find a way to stop the recursion from adding "null" to every String in the ArrayList
+  eraseNull(output);
+  println(output);
+  return output;
+}
+
+void eraseNull(ArrayList<String> output){
+ for(int i = 0; i<output.size(); i++){
+  output.set(i,output.get(i).substring(4));
+ } 
+}
+
+GenericTreeNode rFuncFound(GenericTreeNode n,String s, String m, ArrayList<String>output){
+  if(n.isEnding)output.add(s+n.data);
+  if(n.hasChildren()){
+    for(int i = 0; i<n.children.size(); i++){
+        GenericTreeNode temp = (GenericTreeNode)n.children.get(i);
+        if(m.length()==0){
+          rFuncFound((GenericTreeNode)n.children.get(i),s+n.data,m,output);
+        }else if((Character)m.charAt(0)==temp.getData()){
+         rFuncFound((GenericTreeNode)n.children.get(i),s+n.data,m.substring(1),output); 
+        }
+    }
+  }
+  return n;
+}
+
+
 void keyPressed(){
   switch(key){
     case '\n':
       pastStrings.append(curString);
-      //processCmd(curString);
+      processCmd();
       while(pastStrings.size() > historySize) {
         pastStrings.remove(0);
       }
-      curString = "";
       break;
     case 8:
       if(curString.length() > 0){
         curString = curString.substring(0, curString.length() - 1);
       }
       break;
+      
+    case 9:
+      ArrayList<String>sVals = funcFound(procs);
+      if(sVals.size()>0){
+        curString = sVals.get(0);
+      }
+      break;
+      
     default:
       if(key >= 32 && key <= 127){
         curString += key;
       }
       break;
   }
+}
+
+void processCmd(){
+  String func = new String();
+  try {
+    func = curString.substring(0,curString.indexOf('('));
+  } catch (StringIndexOutOfBoundsException e){
+    //not a function
+    if(curString.equals("help")){
+       pastStrings.append("Not yet written.");
+    }else if(curString.equals("clear")){
+       pastStrings.clear(); 
+    }else if(curString.equals("speed") || curString.equals("rpm")){
+      pastStrings.append(String.valueOf(rotSpeed) + " rpm");
+    }else if(curString.equals("history")){
+      
+    //pings per second
+    }else if(curString.equals("pps")){
+       
+    }else{
+      pastStrings.append("Not a known function, type 'help' for more"); 
+    }
+    curString = "";
+    return;
+  }
+  //is a function
+  String args = new String();
+  try {
+    args = curString.substring(curString.indexOf('(')+1,curString.indexOf(')'));
+  } catch (StringIndexOutOfBoundsException e){
+    pastStrings.append("Need ending parenthesis for functions"); 
+    return;
+  }
+  byte bFunc;
+  //has argument(s) in args string
+  if(func.equals("speed")){
+    //change speed to args value
+    bFunc = 1;
+    int bVal = Integer.parseInt(args);
+    println(bVal);
+  }else if(func.equals("history")){
+    
+  }else if(func.equals("pps")){
+    
+  }else if(func.equals("move")){
+    
+  }else{
+    pastStrings.append("Not a known function, type 'help' for more"); 
+  } 
+  curString = "";
 }
 
 void console(){
@@ -146,67 +270,5 @@ void printAng(){
     line(width/4,height/2, width/4+cos(radians(curAng))*radius,height/2+sin(radians(curAng))*radius);
 }
 
-void serialEvent(Serial port)
-{
-  curMillis = millis();
-  int cm;
-  int angle;
-  byte[] buffer = new byte[bufSize];
-  while(port.available() > 0) {
-    int read = port.readBytes(buffer);
-    if(buffer != null) {
-      cm = (int(buffer[3]) << 24) | (int(buffer[2]) << 16) | (int(buffer[1]) << 8) | int(buffer[0]);
-      cmDist = Float.intBitsToFloat(cm); // distance reading from arduino in centimeters
-      angle = (int(buffer[7]) << 24) | (int(buffer[6]) << 16) | (int(buffer[5]) << 8) | int(buffer[4]);
-      inputAng = Float.intBitsToFloat(angle); // motor angle reading from arduino in degrees
-      if(cmDist > outerLimit) {
-        dots.add(new Dot(cmDist, inputAng));
-      }
-    }
-  }
-}
 
-void drawDots(float cm, float angle)
-{
-  for(int i = 0; i < dots.size(); i++) {
-    Dot dot = dots.get(i);
-    if(dot.alpha < 1) {
-      dots.remove(i);
-    } else {
-      dot.drawSelf();
-      if(millis() - dot.last_fade > 100) {
-        // 10 fades per second
-        dot.fade();
-      }
-    }
-  }
-}
 
-class Dot {
-  float cm;
-  float angle;
-  float alpha;
-  float dotRadius;
-  long last_fade;
-  
-  Dot(float dist, float ang) {
-    cm = dist;
-    angle = ang;
-    alpha = 255;
-    dotRadius = width / 64;
-    last_fade = 0;
-  }
-  
-  void drawSelf() {
-    noStroke();
-    fill(36, 221, 0, alpha);
-    float px = (cm / outerLimit) * radius; // number of pixels from the center of the circle
-    ellipse(width / 4 + px * cos(radians(angle)), height / 2 + px * sin(radians(angle)), dotRadius, dotRadius);
-  }
-  
-  void fade() {
-    alpha *= 9.0/10.0;
-    last_fade = millis();
-  }
-}
-    
