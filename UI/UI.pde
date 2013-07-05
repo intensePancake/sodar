@@ -13,14 +13,10 @@ float cmDist;
 float diameter;
 float radius;
 
-String curString = new String();
-int text_size = 14;
 
-StringList pastStrings;
-int historySize;
 int bufSize = 8;
 
-String[] listFuncs = {"speed(","rpm(","history(","pps(","move(","clear","speed","rpm","history","pps"};
+
 
 //make header null node
 GenericTreeNode procs = new GenericTreeNode();
@@ -48,7 +44,9 @@ void setup(){
   fill(0);
   rect(width / 2, height / 2, width / 2, height / 2);
   historySize = (height / 2 - 6) / (text_size + 6);
-  pastStrings = new StringList(historySize);
+  
+  queries = new StringList();
+  answers = new StringList();
   
   if(Serial.list().length > 0) {
     arduino = new Serial(this, Serial.list()[0], 9600);
