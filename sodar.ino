@@ -1,63 +1,96 @@
+#include <Stepper.h>
+
+#define STEPS 200
+#define RPM 60
+#define DELAY 250 // delay in milliseconds between one pulse from PING)))
+                 // sensor and the next pulse to the PING))) sensor
+
+Stepper motor(STEPS, 8, 9, 10, 11);
 const int pingPin = 7;
-const int bufLen = 4;
+const int bufSize = 4;
+long last_ping_time = 0;
 
 void setup() {
+  motor.setSpeed(RPM);
+  
   // initialize serial communication:
   Serial.begin(9600);
 }
 
 void loop()
 {
-  long duration;
-  byte cmbuf[bufLen];
+  if(millis() - last_ping_time >= DELAY) {
+    last_ping_time = millis();
 
-  // trigger the pulse
+    // we can now request a reading from the PING))) sensor
+    long duration;                // time measurement from sensor
+    float cm;                     // distance reading in centimeters
+    byte buffer[bufSize];          // buffer to send to the serial port
+    float angle;                  // stepper motor angle
   
-  pinMode(pingPin, OUTPUT); // set up the pin to output
+    // trigger the pulse
+    
+    pinMode(pingPin, OUTPUT);
+    
+    // write low for 2 microseconds to ensure clean pulse
+    digitalWrite(pingPin, LOW);
+    delayMicroseconds(2);
+    // send pulse
+    digitalWrite(pingPin, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(pingPin, LOW);
   
-  // write low for 2 microseconds to ensure clean pulse
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);
-  // send pulse
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
-
-  // read pulse from the pin
-  pinMode(pingPin, INPUT);
-  duration = pulseIn(pingPin, HIGH);
-  //Serial.println(duration);
-
-  // convert the time into a distance
-  // fill buffer with the number of centimeters based on duration
-  microsecondsToCentimeters(duration, cmbuf);
+    // read pulse from the pin
+    pinMode(pingPin, INPUT);
+    duration = pulseIn(pingPin, HIGH);
   
-  Serial.write(cmbuf, bufLen);
+    // convert the time into a distance
+    cm = microsecondsToCentimeters(duration);
+    // fill buffer with the distance reading
+    fillBuffer(buffer, cm);
+    //Serial.write(buffer, bufSize);
+    Serial.print(cm);
+    Serial.println(" cm");
+    
+    angle = motor.getAngle();
+    fillBuffer(buffer, angle);
+    //Serial.write(buffer, bufSize);
+  }
   
-  delay(100);
+  motor.step(1);
 }
 
-void microsecondsToCentimeters(long microseconds, byte *buffer)
+float microsecondsToCentimeters(long microseconds)
 {  
-  // speed of sound = 343.2 m/s ==>
+  // speed of sound = 343.2 m/s =>
   // 29.137529 microseconds/cm conversion factor
   
   // Using float
   float cm = float(microseconds) / 29.137529 / 2;
-  long *cmPtr = (long*)(&cm);
+  
+  // Using long
+  //long cm = microseconds / 29 / 2;
+  
+  return cm;
+}
+  
+void fillBuffer(byte *buffer, float data)
+{
+  long *dataPtr = (long*)(&data);
   
   // place the 4 bytes in a byte array
-  buffer[0] = *cmPtr;
-  buffer[1] = (*cmPtr >> 8);
-  buffer[2] = (*cmPtr >> 16);
-  buffer[3] = (*cmPtr >> 24);
+  
+  // Using float
+  buffer[0] = *dataPtr;
+  buffer[1] = (*dataPtr >> 8);
+  buffer[2] = (*dataPtr >> 16);
+  buffer[3] = (*dataPtr >> 24);
   
   /*
   // Using long
-  long cm = microseconds / 29 / 2;
-  buffer[0] = (byte) cm;
-  buffer[1] = (byte) cm >> 8;
-  buffer[2] = (byte) cm >> 16;
-  buffer[3] = (byte) cm >> 24;
+  buffer[0] = (byte) data;
+  buffer[1] = (byte) data >> 8;
+  buffer[2] = (byte) data >> 16;
+  buffer[3] = (byte) data >> 24;
   */
 }
