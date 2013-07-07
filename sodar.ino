@@ -1,17 +1,17 @@
 #include <Stepper.h>
 
-#define STEPS 200
-#define RPM 60
+#define STEPS 200 // number of steps per revolution
 #define DELAY 250 // delay in milliseconds between one pulse from PING)))
                  // sensor and the next pulse to the PING))) sensor
 
 Stepper motor(STEPS, 8, 9, 10, 11);
+int rpm = 60;
 const int pingPin = 7;
 const int bufSize = 4;
 long last_ping_time = 0;
 
 void setup() {
-  motor.setSpeed(RPM);
+  motor.setSpeed(rpm);
   
   // initialize serial communication:
   Serial.begin(9600);
