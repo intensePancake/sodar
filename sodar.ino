@@ -5,6 +5,7 @@
                  // sensor and the next pulse to the PING))) sensor
 
 Stepper motor(STEPS, 8, 9, 10, 11);
+boolean stopMotor = false;
 int rpm = 60;
 const int pingPin = 7;
 const int bufSize = 4;
@@ -57,7 +58,9 @@ void loop()
     //Serial.write(buffer, bufSize);
   }
   
-  motor.step(1);
+  if(!stopMotor) {
+    motor.step(1);
+  }
 }
 
 float microsecondsToCentimeters(long microseconds)
