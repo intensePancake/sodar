@@ -44,6 +44,8 @@ void setup(){
   
   queries = new StringList();
   answers = new StringList();
+  console();
+  
   
   if(Serial.list().length > 0) {
     arduino = new Serial(this, Serial.list()[0], 9600);
@@ -67,21 +69,23 @@ void draw(){
   fill(255);
   rect(width / 2, 0, width / 2, height / 2);
   
-  // draw console
-  fill(0);
-  rect(width / 2, height / 2, width / 2, height / 2);
-  console();
-  
   //if scanning for angle to use
   if(scanOn){
     try {
       scanAng = degrees(atan2((mouseY - (height/2)),mouseX-(width/4)));
       printAng(scanAng); 
     } catch (ArithmeticException e){
-      answers.set(answers.size()-1,"Keep yo motha truckin mouse here til you click");
+      //divide by zero probably due to mouse going off the window
     }
   }
-  
+  noStroke();
+  if(millis()%1000<500){
+     rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
+  }else{
+     fill(0);
+     rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
+     fill(255);
+  }
   drawDots(100, 90);
   /*
   String fps = "fps: " + int(frameRate);

@@ -122,7 +122,7 @@ void keyPressed(){
       }
       break;
   }
-
+  console();
 }
 
 void processCmd(){
@@ -273,6 +273,10 @@ int sniffLine(String q, int returns, int size){
 }
 
 void console(){
+  // draw console
+  fill(0);
+  rect(width / 2, height / 2, width / 2, height / 2);
+  
   fill(255);
   textSize(text_size);
   text('>',width / 2 + 2,height - 7);
@@ -284,7 +288,5 @@ void console(){
     text(queries.get(i), width/2 + 2, height - 7 - 21 * (2 * (queries.size()-i) + count));
     text(answers.get(i), width/2 + 2, height - 7 - 21 * (2 * (answers.size()-i) - 1 + count));
   }
-  if(millis()%1000<500){
-    rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
-  }
 }
+
