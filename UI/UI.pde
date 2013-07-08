@@ -13,10 +13,7 @@ float cmDist;
 float diameter;
 float radius;
 
-
 int bufSize = 8;
-
-
 
 //make header null node
 GenericTreeNode procs = new GenericTreeNode();
@@ -57,7 +54,9 @@ void setup(){
 void draw(){
   //draw a arc at diff angles based on speed of rotation
   changeSpeed();
-  printAng();
+  //rotSpeed*360/60/1000 = degrees per millisecond
+  curAng = (rotSpeed*360/60000*millis())%360;
+  printAng(curAng);
   fill(0,10);
   stroke(255);
   strokeWeight(2);
@@ -72,6 +71,16 @@ void draw(){
   fill(0);
   rect(width / 2, height / 2, width / 2, height / 2);
   console();
+  
+  //if scanning for angle to use
+  if(scanOn){
+    try {
+      scanAng = degrees(atan2((mouseY - (height/2)),mouseX-(width/4)));
+      printAng(scanAng); 
+    } catch (ArithmeticException e){
+      answers.set(answers.size()-1,"Keep yo motha truckin mouse here til you click");
+    }
+  }
   
   drawDots(100, 90);
   /*
@@ -96,19 +105,19 @@ void changeSpeed(){
   }
 }
 
-void printAng(){
-   //rotSpeed*360/60/1000 = degrees per millisecond
-    curAng = (rotSpeed*360/60000*millis())%360;
-    //println(curAng+": "+cos(curAng)+", "+sin(curAng));
-    /*
-    noStroke();
-    fill(36,221,0);
-    arc(width/4,height/2,width/2-width/32,width/2-width/32,radians(curAng),radians(curAng-20));
-    */
+void printAng(float ang){
     strokeWeight(5);
     stroke(36,221,0);
-    line(width/4,height/2, width/4+cos(radians(curAng))*radius,height/2+sin(radians(curAng))*radius);
+    line(width/4,height/2, width/4+cos(radians(ang))*radius,height/2+sin(radians(ang))*radius);
 }
 
 
-
+byte [] f2B(float f){
+    byte[] bArray = new byte[4];
+    int data = Float.floatToIntBits(f);
+    bArray[0] = (byte) (data>>>24);
+    bArray[1] = (byte) (data>>>16);
+    bArray[2] = (byte) (data>>>8);
+    bArray[3] = (byte) (data>>>0); 
+    return bArray;
+}

@@ -5,6 +5,8 @@ StringList answers;
 int historySize;
 int iHist = 0;
 String[] listFuncs = {"speed(","rpm(","history(","pps(","move(","clear","speed","rpm","history","pps"};
+boolean scanOn = false;
+float scanAng;
 
 //build a tree structure of all functions
 void buildTree(){
@@ -120,6 +122,7 @@ void keyPressed(){
       }
       break;
   }
+
 }
 
 void processCmd(){
@@ -140,6 +143,12 @@ void processCmd(){
     //pings per second
     }else if(curString.equals("pps")){
        
+    }else if(curString.equals("stop")){
+      //stop is a one byte function to arduino
+      byte s = 0;
+      arduino.write(s);
+    }else if(curString.equals("exit")){
+      exit();
     }else{
       answers.append("Not a known function, type 'help' for more"); 
     }
@@ -173,7 +182,7 @@ void processCmd(){
         arduino.write(bVal);
       }
     } catch(NumberFormatException e){
-      answers.append("Variable is not an integer value");
+      answers.append("Variable is not a 32-bit integer value");
     } finally {}
 
   }else if(func.equals("history")){
@@ -191,13 +200,16 @@ void processCmd(){
           answers.append("History size is already default.");
         }
       }else {
-        answers.append("Variable is not an integer value");
+        answers.append("Variable is not a 32-bit integer value");
       }
     } finally {}
     
   }else if(func.equals("pps")){
     bFunc = 3;
     arduino.write(bFunc);
+    if(args.length()==0){
+      //set default pings per second
+    }
     try {
       
     } catch (NumberFormatException e){
@@ -205,6 +217,24 @@ void processCmd(){
     }
   }else if(func.equals("move")){
     bFunc = 4;
+    arduino.write(bFunc);
+    try {
+      curAng = Float.parseFloat(args);
+      //can't be one byte because of 360 degrees, could use 2 bytes if wanted
+      
+      arduino.write(f2B(curAng));
+    } catch (NumberFormatException e){
+      if(args.length()==0){
+        //if no angle specified, use graph to specify one
+        cursor(CROSS);
+        scanOn = true;
+        answers.append("Click to select an angle");
+      }else{
+        answers.append("Variable is not a 32-bit integer value");
+      }
+    }
+  }else if(func.equals("scan")){
+    bFunc = 5;
     arduino.write(bFunc);
     
   }else{
@@ -214,6 +244,13 @@ void processCmd(){
   if(answers.size() < queries.size()) answers.append("");
 }
 
+void mouseClicked(){
+   if(scanOn){
+      scanOn = false;
+      cursor(ARROW);
+      arduino.write(f2B(scanAng));
+   }
+}
 
 int sniffLine(String q, int returns, int size){
   //find how many '\n' chars are in q
