@@ -4,7 +4,8 @@ StringList queries;
 StringList answers;
 int historySize;
 int iHist = 0;
-String[] listFuncs = {"speed(","rpm(","history(","pps(","move(","clear","speed","rpm","history","pps"};
+String[] listFuncs = {"speed(","rpm(","history(","pps(","move(","clear","speed","rpm","history","pps",
+                      "exit"};
 boolean scanOn = false;
 float scanAng;
 
@@ -217,7 +218,7 @@ void processCmd(){
     }
   }else if(func.equals("move")){
     bFunc = 4;
-    arduino.write(bFunc);
+    //arduino.write(bFunc);
     try {
       curAng = Float.parseFloat(args);
       //can't be one byte because of 360 degrees, could use 2 bytes if wanted
@@ -254,7 +255,7 @@ void mouseClicked(){
 
 int sniffLine(String q, int returns, int size){
   //find how many '\n' chars are in q
-  if(q != ""){
+  if(q != "" && q != null){
     String pastTemp = q;
     try {
       while(pastTemp.contains("\n")){
@@ -263,8 +264,8 @@ int sniffLine(String q, int returns, int size){
       }
     } catch (NullPointerException e){
       //don't add because next line is null
-      q = q.substring(0,q.indexOf('\n'));
-    } 
+      q = q.substring(0, q.indexOf('\n'));
+    }
     return returns;
   }else{
     returns--;
@@ -283,10 +284,16 @@ void console(){
   text(curString, width / 2 + 12, height - 7);
   int count = 0;
   for(int i = queries.size() - 1; i >= 0; i--){
-    count = sniffLine(queries.get(i),count, 2*(queries.size()-i));
-    count = sniffLine(answers.get(i),count, 2*(answers.size()-i)-1);
-    text(queries.get(i), width/2 + 2, height - 7 - 21 * (2 * (queries.size()-i) + count));
-    text(answers.get(i), width/2 + 2, height - 7 - 21 * (2 * (answers.size()-i) - 1 + count));
+    String q = queries.get(i);
+    String a = answers.get(i);
+    if(a == null) {
+      a = "";
+      answers.set(i, a);
+    }
+    count = sniffLine(q, count, 2*(queries.size()-i));
+    count = sniffLine(a, count, 2*(answers.size()-i)-1);
+    text(q, width/2 + 2, height - 7 - 21 * (2 * (queries.size()-i) + count));
+    text(a, width/2 + 2, height - 7 - 21 * (2 * (answers.size()-i) - 1 + count));
   }
 }
 

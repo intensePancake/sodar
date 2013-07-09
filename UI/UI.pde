@@ -15,6 +15,10 @@ float radius;
 
 int bufSize = 8;
 
+color green = color(36, 221, 0, 150);
+color red = color(221, 36, 0, 150);
+color blue = color(36, 0, 221, 150);
+
 //make header null node
 GenericTreeNode procs = new GenericTreeNode();
 
@@ -58,13 +62,14 @@ void draw(){
   changeSpeed();
   //rotSpeed*360/60/1000 = degrees per millisecond
   curAng = (rotSpeed*360/60000*millis())%360;
-  printAng(curAng);
-  fill(0,10);
+  fill(0);//,10);
   stroke(255);
   strokeWeight(2);
   strokeCap(SQUARE);
   smooth();
   ellipse(width / 4, height / 2, diameter, diameter);
+  //printAng(curAng, green);
+  displayArc(curAng, green);
   noStroke();
   fill(255);
   rect(width / 2, 0, width / 2, height / 2);
@@ -73,18 +78,19 @@ void draw(){
   if(scanOn){
     try {
       scanAng = degrees(atan2((mouseY - (height/2)),mouseX-(width/4)));
-      printAng(scanAng); 
+      displayArc(scanAng, red);
+      //printAng(scanAng, red); 
     } catch (ArithmeticException e){
       //divide by zero probably due to mouse going off the window
     }
   }
   noStroke();
   if(millis()%1000<500){
-     rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
+    fill(255);
+    rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
   }else{
      fill(0);
      rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
-     fill(255);
   }
   drawDots(100, 90);
   /*
@@ -109,12 +115,17 @@ void changeSpeed(){
   }
 }
 
-void printAng(float ang){
+void printAng(float ang, color c){
     strokeWeight(5);
-    stroke(36,221,0);
+    stroke(c);
     line(width/4,height/2, width/4+cos(radians(ang))*radius,height/2+sin(radians(ang))*radius);
 }
 
+void displayArc(float angle, color c) {
+  fill(c);
+  arc(width / 4, height / 2, diameter, diameter,
+      radians(angle - 10), radians(angle + 10));
+}
 
 byte [] f2B(float f){
     byte[] bArray = new byte[4];
