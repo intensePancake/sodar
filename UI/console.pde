@@ -133,7 +133,7 @@ void processCmd(){
   } catch (StringIndexOutOfBoundsException e){
     //not a function
     if(curString.equals("help")){
-       answers.append("Not yet written.");
+      answers.append("Not yet written.");
     }else if(curString.equals("clear")){
        queries.clear();
        answers.clear(); 
@@ -172,13 +172,13 @@ void processCmd(){
     arduino.write(bFunc);
     try {
       Integer iVal = Integer.parseInt(args);
-      if(iVal<=0 || iVal>256){
-        answers.append("RPM can only be in range 1 to 256");
+      if(iVal <= 0 || iVal > 255){
+        answers.append("RPM can only be in range 1 to 255");
         curString = curString.substring(0,curString.indexOf('(')+1);
         return;
       } else {
         //readjust the integer so it fits the -128 to 127
-        iVal -= 129;
+        if(iVal >= 128) iVal -= 256;
         byte bVal = iVal.byteValue();
         arduino.write(bVal);
       }
@@ -218,7 +218,7 @@ void processCmd(){
     }
   }else if(func.equals("move")){
     bFunc = 4;
-    //arduino.write(bFunc);
+    arduino.write(bFunc);
     try {
       curAng = Float.parseFloat(args);
       //can't be one byte because of 360 degrees, could use 2 bytes if wanted

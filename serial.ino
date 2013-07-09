@@ -1,8 +1,8 @@
 void serialEvent()
 {
   while(Serial.available() > 0) {
-    byte serialIn = Serial.read();
-    execute(serialIn);
+    byte fid = Serial.read();
+    execute(fid);
   }
 }
 
