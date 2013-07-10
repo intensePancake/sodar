@@ -35,7 +35,6 @@ void setup(){
   diameter = (width/2-width/32);
   radius = diameter / 2;
   dots = new ArrayList<Dot>();
-  dots.add(new Dot(100, 90));
   
   line(width / 2, 0, width / 2, height);
   
@@ -59,10 +58,10 @@ void setup(){
 
 void draw(){
   //draw a arc at diff angles based on speed of rotation
-  changeSpeed();
+  //changeSpeed();
   //rotSpeed*360/60/1000 = degrees per millisecond
-  curAng = (rotSpeed*360/60000*millis())%360;
-  fill(0);//,10);
+  //curAng = (rotSpeed*360/60000*millis())%360;
+  fill(0);//10);
   stroke(255);
   strokeWeight(2);
   strokeCap(SQUARE);
@@ -92,7 +91,7 @@ void draw(){
      fill(0);
      rect(width / 2 + textWidth('>' + curString) + 2, height - 4, 10, 2);
   }
-  drawDots(100, 90);
+  drawDots();
   /*
   String fps = "fps: " + int(frameRate);
   text(fps, width/2 + 10, 10);
@@ -111,6 +110,7 @@ void changeSpeed(){
     if(abs(inputAng-360-lastAng)<abs(inputAng-lastAng))difAng = inputAng-lastAng - 360;
     float newSpeed = difAng/(curMillis-lastMillis)*60000/360;
     rotSpeed = (rotSpeed * 4 + newSpeed)/5; //increment the speed to new speed
+    println("rotSpeed = " + rotSpeed);
     lastMillis = curMillis;
   }
 }
@@ -125,6 +125,11 @@ void displayArc(float angle, color c) {
   fill(c);
   arc(width / 4, height / 2, diameter, diameter,
       radians(angle - 10), radians(angle + 10));
+}
+
+void stop()
+{
+  arduino.stop();
 }
 
 byte [] f2B(float f){

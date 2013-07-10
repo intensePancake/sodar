@@ -1,6 +1,6 @@
 ArrayList<Dot> dots;
 
-void drawDots(float cm, float angle)
+void drawDots()
 {
   for(int i = 0; i < dots.size(); i++) {
     Dot dot = dots.get(i);

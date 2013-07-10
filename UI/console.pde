@@ -138,7 +138,8 @@ void processCmd(){
        queries.clear();
        answers.clear(); 
     }else if(curString.equals("speed") || curString.equals("rpm")){
-      answers.append(String.valueOf(rotSpeed) + " rpm");
+      byte bFunc = 6;
+      arduino.write(bFunc);
     }else if(curString.equals("history")){
       answers.append(Integer.toString(historySize));
     //pings per second
@@ -147,6 +148,9 @@ void processCmd(){
     }else if(curString.equals("stop")){
       //stop is a one byte function to arduino
       byte s = 0;
+      arduino.write(s);
+    } else if(curString.equals("start")) {
+      byte s = 1;
       arduino.write(s);
     }else if(curString.equals("exit")){
       exit();
@@ -166,10 +170,9 @@ void processCmd(){
   }
   byte bFunc;
   //has argument(s) in args string
-  if(func.equals("speed")){
+  if(func.equals("speed") || func.equals("rpm")) {
     //change rpm of step motor to args value
-    bFunc = 1;
-    arduino.write(bFunc);
+    bFunc = 2;
     try {
       Integer iVal = Integer.parseInt(args);
       if(iVal <= 0 || iVal > 255){
@@ -177,6 +180,7 @@ void processCmd(){
         curString = curString.substring(0,curString.indexOf('(')+1);
         return;
       } else {
+        arduino.write(bFunc);
         //readjust the integer so it fits the -128 to 127
         if(iVal >= 128) iVal -= 256;
         byte bVal = iVal.byteValue();
@@ -188,7 +192,7 @@ void processCmd(){
 
   }else if(func.equals("history")){
     //changes history size
-    bFunc = 2; //unnecessary for arduino but I want to give every function a value
+    bFunc = 3; //unnecessary for arduino but I want to give every function a value
     try{
       historySize = Integer.parseInt(args);
     } catch (NumberFormatException e){
@@ -206,18 +210,34 @@ void processCmd(){
     } finally {}
     
   }else if(func.equals("pps")){
-    bFunc = 3;
-    arduino.write(bFunc);
+    bFunc = 4;
+    try {
+      Integer ppsIn = Integer.parseInt(args);
+      if(1 <= ppsIn && ppsIn <= 50) {
+        byte pps = ppsIn.byteValue();
+        arduino.write(bFunc);
+        arduino.write(pps);
+      } else {
+        answers.append("Argument must be between 1 and 50");
+      }
+    } catch(NumberFormatException e) {
+      if(args.length() == 0) {
+        byte pps = 50; // default value
+        arduino.write(bFunc);
+        arduino.write(pps);
+      } else {
+        answers.append("Stop being stupid.");
+      }
+    }
     if(args.length()==0){
       //set default pings per second
+      byte pps = 10;
+      arduino.write(bFunc);
+      arduino.write(pps);
     }
-    try {
-      
-    } catch (NumberFormatException e){
-      
-    }
+    
   }else if(func.equals("move")){
-    bFunc = 4;
+    bFunc = 5;
     arduino.write(bFunc);
     try {
       curAng = Float.parseFloat(args);
@@ -235,7 +255,7 @@ void processCmd(){
       }
     }
   }else if(func.equals("scan")){
-    bFunc = 5;
+    bFunc = 6;
     arduino.write(bFunc);
     
   }else{
@@ -284,12 +304,11 @@ void console(){
   text(curString, width / 2 + 12, height - 7);
   int count = 0;
   for(int i = queries.size() - 1; i >= 0; i--){
+    if(answers.size() == i) {
+      answers.set(i, "");
+    }
     String q = queries.get(i);
     String a = answers.get(i);
-    if(a == null) {
-      a = "";
-      answers.set(i, a);
-    }
     count = sniffLine(q, count, 2*(queries.size()-i));
     count = sniffLine(a, count, 2*(answers.size()-i)-1);
     text(q, width/2 + 2, height - 7 - 21 * (2 * (queries.size()-i) + count));
