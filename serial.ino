@@ -23,6 +23,7 @@ void execute(byte fid)
       stopMotor = false;
       break;
     case 2:
+      digitalWrite(2, HIGH);
       // change the speed of the motor
       rpm = (int)Serial.read();
       motor.setSpeed(rpm);
@@ -34,7 +35,6 @@ void execute(byte fid)
       ping_delay = 1000 / pps;
       break;
     case 5:
-    /*
       // move to a certain angle and stop motor
       while(Serial.available() < bufSize) {
       }
@@ -45,9 +45,9 @@ void execute(byte fid)
       angle = *(float*)buffer;
       motor.setAngle(angle);
       stopMotor = true;
-      */
       break;
     case 6:
+      // get the motor speed
       for(int i = 0; i < bufSize; i++) {
         buffer[i] = 0;
       }

@@ -1,12 +1,14 @@
-float rotSpeed; //rotations per minute
 float outerLimit;
 
 float curAng; //current angle
 float inputAng;
 float lastAng;
 
-float lastMillis;
-float curMillis;
+long tLast;
+long tCur;
+
+int[] rpm = {15, 15, 15, 15, 15}; // stores 5 most recent calculations of real RPM
+int rpmRequest = 15;
 
 float cmDist;
 
@@ -22,16 +24,14 @@ color blue = color(36, 0, 221, 150);
 //make header null node
 GenericTreeNode procs = new GenericTreeNode();
 
-
 void setup(){
   frameRate(100);
   size(720,480);
   background(150);
   curString = "";
-  rotSpeed = 5;
   outerLimit = 300;
   curAng = 0;
-  lastMillis = millis();
+  tCur = millis();
   diameter = (width/2-width/32);
   radius = diameter / 2;
   dots = new ArrayList<Dot>();
@@ -57,10 +57,6 @@ void setup(){
 }
 
 void draw(){
-  //draw a arc at diff angles based on speed of rotation
-  //changeSpeed();
-  //rotSpeed*360/60/1000 = degrees per millisecond
-  //curAng = (rotSpeed*360/60000*millis())%360;
   stroke(255);
   strokeWeight(2);
   strokeCap(SQUARE);
@@ -96,23 +92,6 @@ void draw(){
   String fps = "fps: " + int(frameRate);
   text(fps, width/2 + 10, 10);
   */
-}
-
-void changeSpeed(){
-  if(curMillis != lastMillis){
-    /*
-    //max difference between correct and real is half degree increment of 1.8deg
-    float fluctuation = randomGaussian()*0.9/12000;
-    inputAng = (rotSpeed +fluctuation )*360/60000*(curMillis-lastMillis);
-    */
-    float difAng = inputAng - lastAng;
-    if(abs(inputAng+360-lastAng)<abs(inputAng-lastAng))difAng = inputAng-lastAng + 360;
-    if(abs(inputAng-360-lastAng)<abs(inputAng-lastAng))difAng = inputAng-lastAng - 360;
-    float newSpeed = difAng/(curMillis-lastMillis)*60000/360;
-    rotSpeed = (rotSpeed * 4 + newSpeed)/5; //increment the speed to new speed
-    println("rotSpeed = " + rotSpeed);
-    lastMillis = curMillis;
-  }
 }
 
 void printAng(float ang, color c){

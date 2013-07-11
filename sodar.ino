@@ -3,7 +3,7 @@
 #define STEPS 200 // number of steps per revolution
 
 Stepper motor(STEPS, 8, 9, 10, 11);
-boolean stopMotor = true;
+boolean stopMotor = false;
 int rpm = 15;
 int ping_delay = 50;
 const int pingPin = 7;
@@ -11,8 +11,11 @@ const int bufSize = 4;
 const int compBufSize = 8;
 long last_ping_time = 0;
 
+long tmax = 0;
+
 void setup() {
   motor.setSpeed(rpm);
+  pinMode(2, OUTPUT); // debugging LED
   // initialize serial communication
   Serial.begin(9600);
 }
@@ -42,10 +45,11 @@ void loop()
   
     // read pulse from the pin
     pinMode(pingPin, INPUT);
-    duration = pulseIn(pingPin, HIGH);
+    duration = pulseIn(pingPin, HIGH, 25000);
   
     // convert the time into a distance
     cm = microsecondsToCentimeters(duration);
+   //cm = random(1, 300);
     // fill buffer with the distance reading
     floatToBuffer(buffer, cm);
     Serial.write(buffer, bufSize);

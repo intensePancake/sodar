@@ -185,6 +185,7 @@ void processCmd(){
         if(iVal >= 128) iVal -= 256;
         byte bVal = iVal.byteValue();
         arduino.write(bVal);
+        rpmRequest = bVal;
       }
     } catch(NumberFormatException e){
       answers.append("Variable is not a 32-bit integer value");
@@ -266,12 +267,25 @@ void processCmd(){
   bFunc = -1;
 }
 
+void deltaRPM(int diff)
+{
+  int req = rpmRequest - diff;
+  if(1 <= req && req <= 255) {
+    bFunc = 2;
+    if(128 <= req && req < 256) req -= 256;
+    println("writing bFunc = " + bFunc);
+    arduino.write(bFunc);
+    println("writing byte req = " + byte(req));
+    arduino.write(byte(req));
+    bFunc = -1;
+  }
+}
+
 void mouseClicked(){
    if(scanOn){
      scanOn = false;
      cursor(ARROW);
      bFunc = 5;
-     println(scanAng);
      arduino.write(bFunc);;
      arduino.write(f2B(scanAng));
      bFunc = -1;

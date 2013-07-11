@@ -4,35 +4,59 @@ Serial arduino;
 
 void serialEvent(Serial port)
 {
-  curMillis = millis();
+  // guuyyyyyyyyyyyyyyyyyyyyys... i'm super Serial.
   int cm;
   int angle;
   byte[] buffer = new byte[bufSize];
   while(port.available() > 0) {
     int read = port.readBytes(buffer);
     if(buffer != null) {
-      /*
       if(bFunc == 6) {
         // request was for motor speed
-        println("request motor speed");
+        println(buffer);
         if(answers.get(answers.size() - 1).equals("")) {
           answers.set(answers.size() - 1, buffer[bufSize - 1] + " rpm");
         } else {
           answers.append(buffer[bufSize - 1] + " rpm");
         }
+        bFunc = -1;
         console();
       } else {
-        */
         cm = (int(buffer[3]) << 24) | (int(buffer[2]) << 16) | (int(buffer[1]) << 8) | int(buffer[0]);
         cmDist = Float.intBitsToFloat(cm); // distance reading from arduino in centimeters
         angle = (int(buffer[7]) << 24) | (int(buffer[6]) << 16) | (int(buffer[5]) << 8) | int(buffer[4]);
         inputAng = Float.intBitsToFloat(angle); // motor angle reading from arduino in degrees
+        lastAng = curAng;
+        tLast = tCur;
         curAng = inputAng;
-        if(cmDist < outerLimit) {
+        tCur = millis();
+        //updateRPM();
+        if(0 < cmDist && cmDist < outerLimit) {
           dots.add(new Dot(cmDist, inputAng));
         }
-   //   }
+      }
     }
   }
 }
 
+void updateRPM()
+{
+  float diff = 0;
+  float deg = curAng - lastAng;
+  float ms = tCur - tLast;
+  for(int i = 4; i > 0; i--) {
+    rpm[i] = rpm[i - 1];
+    diff += rpm[i] - rpmRequest;
+  }
+  rpm[0] = round(deg / ms * 1000 / 6);
+  if(rpm[0] <= 0 || rpm[0] > 200)
+    rpm[0] = rpmRequest;
+  diff += rpmRequest - rpm[0];
+  diff = diff / 5; // get the average difference
+  println(rpm);
+  if(diff < -2 || diff > 2) {
+    println("diff = " + diff);
+    deltaRPM(round(diff));
+    println("deltaRPM done");
+  }
+}
