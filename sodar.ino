@@ -3,16 +3,16 @@
 #define STEPS 200 // number of steps per revolution
 
 Stepper motor(STEPS, 8, 9, 10, 11);
-boolean stopMotor = false;
-int rpm = 5;
+boolean stopMotor = true;
+int rpm = 15;
 int ping_delay = 50;
 const int pingPin = 7;
 const int bufSize = 4;
+const int compBufSize = 8;
 long last_ping_time = 0;
 
 void setup() {
   motor.setSpeed(rpm);
-  pinMode(2, OUTPUT);
   // initialize serial communication
   Serial.begin(9600);
 }
@@ -55,6 +55,7 @@ void loop()
     angle = motor.getAngle();
     floatToBuffer(buffer, angle);
     Serial.write(buffer, bufSize);
+    
   }
   
   if(!stopMotor) {

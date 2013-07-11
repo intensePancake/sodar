@@ -61,11 +61,11 @@ void draw(){
   //changeSpeed();
   //rotSpeed*360/60/1000 = degrees per millisecond
   //curAng = (rotSpeed*360/60000*millis())%360;
-  fill(0);//10);
   stroke(255);
   strokeWeight(2);
   strokeCap(SQUARE);
   smooth();
+  fill(0);//10);
   ellipse(width / 4, height / 2, diameter, diameter);
   //printAng(curAng, green);
   displayArc(curAng, green);
@@ -135,9 +135,9 @@ void stop()
 byte [] f2B(float f){
     byte[] bArray = new byte[4];
     int data = Float.floatToIntBits(f);
-    bArray[0] = (byte) (data>>>24);
-    bArray[1] = (byte) (data>>>16);
-    bArray[2] = (byte) (data>>>8);
-    bArray[3] = (byte) (data>>>0); 
+    bArray[0] = (byte) (data);
+    bArray[1] = (byte) (data >> 8);
+    bArray[2] = (byte) (data >> 16);
+    bArray[3] = (byte) (data >> 24); 
     return bArray;
 }

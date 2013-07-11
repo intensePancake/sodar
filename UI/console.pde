@@ -6,6 +6,7 @@ int historySize;
 int iHist = 0;
 String[] listFuncs = {"speed(","rpm(","history(","pps(","move(","clear","speed","rpm","history","pps",
                       "exit"};
+byte bFunc;
 boolean scanOn = false;
 float scanAng;
 
@@ -138,7 +139,7 @@ void processCmd(){
        queries.clear();
        answers.clear(); 
     }else if(curString.equals("speed") || curString.equals("rpm")){
-      byte bFunc = 6;
+      bFunc = 6;
       arduino.write(bFunc);
     }else if(curString.equals("history")){
       answers.append(Integer.toString(historySize));
@@ -147,11 +148,11 @@ void processCmd(){
        
     }else if(curString.equals("stop")){
       //stop is a one byte function to arduino
-      byte s = 0;
-      arduino.write(s);
+      bFunc = 0;
+      arduino.write(bFunc);
     } else if(curString.equals("start")) {
-      byte s = 1;
-      arduino.write(s);
+      bFunc = 1;
+      arduino.write(bFunc);
     }else if(curString.equals("exit")){
       exit();
     }else{
@@ -168,7 +169,6 @@ void processCmd(){
     answers.append("Need ending parenthesis for functions"); 
     return;
   }
-  byte bFunc;
   //has argument(s) in args string
   if(func.equals("speed") || func.equals("rpm")) {
     //change rpm of step motor to args value
@@ -238,11 +238,10 @@ void processCmd(){
     
   }else if(func.equals("move")){
     bFunc = 5;
-    arduino.write(bFunc);
     try {
       curAng = Float.parseFloat(args);
       //can't be one byte because of 360 degrees, could use 2 bytes if wanted
-      
+      arduino.write(bFunc);
       arduino.write(f2B(curAng));
     } catch (NumberFormatException e){
       if(args.length()==0){
@@ -260,16 +259,22 @@ void processCmd(){
     
   }else{
     answers.append("Not a known function, type 'help' for more"); 
-  } 
+  }
   curString = "";
   if(answers.size() < queries.size()) answers.append("");
+  
+  bFunc = -1;
 }
 
 void mouseClicked(){
    if(scanOn){
-      scanOn = false;
-      cursor(ARROW);
-      arduino.write(f2B(scanAng));
+     scanOn = false;
+     cursor(ARROW);
+     bFunc = 5;
+     println(scanAng);
+     arduino.write(bFunc);;
+     arduino.write(f2B(scanAng));
+     bFunc = -1;
    }
 }
 
@@ -297,7 +302,6 @@ void console(){
   // draw console
   fill(0);
   rect(width / 2, height / 2, width / 2, height / 2);
-  
   fill(255);
   textSize(text_size);
   text('>',width / 2 + 2,height - 7);
@@ -311,6 +315,7 @@ void console(){
     String a = answers.get(i);
     count = sniffLine(q, count, 2*(queries.size()-i));
     count = sniffLine(a, count, 2*(answers.size()-i)-1);
+    fill(255);
     text(q, width/2 + 2, height - 7 - 21 * (2 * (queries.size()-i) + count));
     text(a, width/2 + 2, height - 7 - 21 * (2 * (answers.size()-i) - 1 + count));
   }

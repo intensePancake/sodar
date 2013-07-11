@@ -11,6 +11,8 @@ void serialEvent()
 // and executes the function
 void execute(byte fid)
 {
+  byte buffer[bufSize];
+  
   switch(fid) {
     case 0:
       // stop the motor
@@ -32,8 +34,10 @@ void execute(byte fid)
       ping_delay = 1000 / pps;
       break;
     case 5:
+    /*
       // move to a certain angle and stop motor
-      byte buffer[bufSize];
+      while(Serial.available() < bufSize) {
+      }
       for(int i = 0; i < bufSize; i++) {
         buffer[i] = Serial.read();
       }
@@ -41,16 +45,17 @@ void execute(byte fid)
       angle = *(float*)buffer;
       motor.setAngle(angle);
       stopMotor = true;
+      */
       break;
-    /*case 6:
-      byte buf[3];
-      byte ret;
-      for(int i = 0; i < 3; i++)
-        buffer[i] = 255;
-      Serial.write(buf, 3);
-      ret = (byte)rpm;
-      Serial.write(&ret, sizeof(byte));
-      break;*/
+    case 6:
+      for(int i = 0; i < bufSize; i++) {
+        buffer[i] = 0;
+      }
+      Serial.write(buffer, bufSize);
+      
+      buffer[bufSize - 1] = (byte)rpm;
+      Serial.write(buffer, bufSize);
+      break;
     default:
       break;
   }
