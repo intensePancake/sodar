@@ -7,9 +7,9 @@ float lastAng;
 long tLast;
 long tCur;
 
-int[] rpm = {15, 15, 15, 15, 15}; // stores 5 most recent calculations of real RPM
+int numRPMs = 5;
+int[] rpm = new int[numRPMs]; // stores 5 most recent calculations of real RPM
 int rpmRequest = 15;
-int adjustedReq;
 
 float cmDist;
 
@@ -55,6 +55,8 @@ void setup(){
     arduino = new Serial(this, Serial.list()[0], 9600);
     arduino.buffer(bufSize);
   }
+  
+  resetRPM();
 }
 
 void draw(){
@@ -105,6 +107,13 @@ void displayArc(float angle, color c) {
   fill(c);
   arc(width / 4, height / 2, diameter, diameter,
       radians(angle - 10), radians(angle + 10));
+}
+
+void resetRPM()
+{
+  for(int i = 0; i < numRPMs; i++) {
+    rpm[i] = rpmRequest;
+  }
 }
 
 void stop()

@@ -190,6 +190,7 @@ void processCmd(){
         byte bVal = iVal.byteValue();
         arduino.write(bVal);
         rpmRequest = bVal;
+        resetRPM();
       }
     } catch(NumberFormatException e){
       answers.append("Variable is not a 32-bit integer value");
@@ -218,16 +219,16 @@ void processCmd(){
     bFunc = 4;
     try {
       Integer ppsIn = Integer.parseInt(args);
-      if(1 <= ppsIn && ppsIn <= 50) {
+      if(1 <= ppsIn && ppsIn <= 30) {
         byte pps = ppsIn.byteValue();
         arduino.write(bFunc);
         arduino.write(pps);
       } else {
-        answers.append("Argument must be between 1 and 50");
+        answers.append("Argument must be between 1 and 30");
       }
     } catch(NumberFormatException e) {
       if(args.length() == 0) {
-        byte pps = 50; // default value
+        byte pps = 20; // default value
         arduino.write(bFunc);
         arduino.write(pps);
       } else {
@@ -236,7 +237,7 @@ void processCmd(){
     }
     if(args.length()==0){
       //set default pings per second
-      byte pps = 10;
+      byte pps = 20;
       arduino.write(bFunc);
       arduino.write(pps);
     }
