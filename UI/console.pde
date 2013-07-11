@@ -277,7 +277,6 @@ void deltaRPM(int diff)
   int req = rpmRequest - diff;
   if(1 <= req && req <= 255) {
     bFunc = 2;
-    println("requesting "+req+" rpm from arduino");
     if(128 <= req && req < 256) req -= 256;
     arduino.write(bFunc);
     arduino.write(byte(req));

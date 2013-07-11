@@ -23,7 +23,6 @@ int rpm = 15; // default RPM
 
 void setup() {
   motor.setSpeed(rpm);
-  pinMode(2, OUTPUT); // debugging LED
   // initialize serial communication
   Serial.begin(9600);
 }

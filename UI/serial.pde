@@ -13,7 +13,6 @@ void serialEvent(Serial port)
     if(buffer != null) {
       if(bFunc == 6) {
         // request was for motor speed
-        println(buffer);
         if(answers.get(answers.size() - 1).equals("")) {
           answers.set(answers.size() - 1, buffer[bufSize - 1] + " rpm");
         } else {
@@ -26,11 +25,14 @@ void serialEvent(Serial port)
         cmDist = Float.intBitsToFloat(cm); // distance reading from arduino in centimeters
         angle = (int(buffer[7]) << 24) | (int(buffer[6]) << 16) | (int(buffer[5]) << 8) | int(buffer[4]);
         inputAng = Float.intBitsToFloat(angle); // motor angle reading from arduino in degrees
+        /* before arduino interrupt code was added
         lastAng = curAng;
         tLast = tCur;
-        curAng = inputAng;
         tCur = millis();
-        updateRPM(); // dynamic speed adjustment based on motor angles and time
+        */
+        curAng = inputAng;
+        //updateRPM(); // dynamic speed adjustment based on motor angles and time
+        
         if(0 < cmDist && cmDist < outerLimit) {
           dots.add(new Dot(cmDist, inputAng));
         }
@@ -62,9 +64,6 @@ void updateRPM()
   diff += rpmRequest - rpm[0];
     diff /= numRPMs; // get the average difference
   }
-  println(rpm);
-  println("rpmRequest = " + rpmRequest);
-  println("diff = " + diff);
   if(diff < -2 || diff > 2) {
     deltaRPM(round(diff));
   }

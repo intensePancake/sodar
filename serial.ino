@@ -26,8 +26,6 @@ void execute(byte fid)
       // change the speed of the motor
       while(!Serial.available());
       rpm = (int)Serial.read();
-      if(rpm == 20) digitalWrite(2, HIGH);
-      else digitalWrite(2, LOW);
       motor.setSpeed(rpm);
       break;
     case 4:
