@@ -29,8 +29,9 @@ void serialEvent(Serial port)
         lastAng = curAng;
         tLast = tCur;
         curAng = inputAng;
+        println("curAng = " + curAng);
         tCur = millis();
-        //updateRPM();
+        updateRPM(); // dynamic speed adjustment based on motor angles and time
         if(0 < cmDist && cmDist < outerLimit) {
           dots.add(new Dot(cmDist, inputAng));
         }
@@ -51,12 +52,21 @@ void updateRPM()
   rpm[0] = round(deg / ms * 1000 / 6);
   if(rpm[0] <= 0 || rpm[0] > 200)
     rpm[0] = rpmRequest;
+  
+  diff += rpm[0] - rpmRequest;
+  if(diff < 0) {
+    // processing doesn't know how to divide...
+    diff *= -1;
+    diff /= 5;
+    diff *= -1;
+  } else {
   diff += rpmRequest - rpm[0];
-  diff = diff / 5; // get the average difference
+    diff /= 5; // get the average difference
+  }
   println(rpm);
+  println("rpmRequest = " + rpmRequest);
   if(diff < -2 || diff > 2) {
     println("diff = " + diff);
     deltaRPM(round(diff));
-    println("deltaRPM done");
   }
 }

@@ -48,8 +48,8 @@ void loop()
     duration = pulseIn(pingPin, HIGH, 25000);
   
     // convert the time into a distance
-    cm = microsecondsToCentimeters(duration);
-   //cm = random(1, 300);
+    //cm = microsecondsToCentimeters(duration);
+    cm = random(1, 300);
     // fill buffer with the distance reading
     floatToBuffer(buffer, cm);
     Serial.write(buffer, bufSize);

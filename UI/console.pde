@@ -139,8 +139,12 @@ void processCmd(){
        queries.clear();
        answers.clear(); 
     }else if(curString.equals("speed") || curString.equals("rpm")){
-      bFunc = 6;
-      arduino.write(bFunc);
+      int rpmAvg = 0;
+      for(int i = 0; i < 5; i++) {
+        rpmAvg += rpm[i];
+      }
+      rpmAvg /= 5;
+      answers.append(rpmAvg + " rpm");
     }else if(curString.equals("history")){
       answers.append(Integer.toString(historySize));
     //pings per second
@@ -272,10 +276,9 @@ void deltaRPM(int diff)
   int req = rpmRequest - diff;
   if(1 <= req && req <= 255) {
     bFunc = 2;
+    println("requesting "+req+" rpm from arduino");
     if(128 <= req && req < 256) req -= 256;
-    println("writing bFunc = " + bFunc);
     arduino.write(bFunc);
-    println("writing byte req = " + byte(req));
     arduino.write(byte(req));
     bFunc = -1;
   }

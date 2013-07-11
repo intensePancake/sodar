@@ -9,6 +9,7 @@ long tCur;
 
 int[] rpm = {15, 15, 15, 15, 15}; // stores 5 most recent calculations of real RPM
 int rpmRequest = 15;
+int adjustedReq;
 
 float cmDist;
 

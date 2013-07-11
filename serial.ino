@@ -23,9 +23,11 @@ void execute(byte fid)
       stopMotor = false;
       break;
     case 2:
-      digitalWrite(2, HIGH);
       // change the speed of the motor
+      while(!Serial.available());
       rpm = (int)Serial.read();
+      if(rpm == 20) digitalWrite(2, HIGH);
+      else digitalWrite(2, LOW);
       motor.setSpeed(rpm);
       break;
     case 4:
@@ -36,8 +38,7 @@ void execute(byte fid)
       break;
     case 5:
       // move to a certain angle and stop motor
-      while(Serial.available() < bufSize) {
-      }
+      while(Serial.available() < bufSize);
       for(int i = 0; i < bufSize; i++) {
         buffer[i] = Serial.read();
       }
@@ -46,7 +47,7 @@ void execute(byte fid)
       motor.setAngle(angle);
       stopMotor = true;
       break;
-    case 6:
+/*    case 6:
       // get the motor speed
       for(int i = 0; i < bufSize; i++) {
         buffer[i] = 0;
@@ -56,6 +57,7 @@ void execute(byte fid)
       buffer[bufSize - 1] = (byte)rpm;
       Serial.write(buffer, bufSize);
       break;
+*/
     default:
       break;
   }
